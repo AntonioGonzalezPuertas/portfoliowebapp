@@ -13,9 +13,31 @@ export class ProjectsService {
   constructor() { 
     this.projects = dummyProjectsData;
     this.categories = dummyCategoriesData;
-    this.addPreviewProfileToProjects();
+    //this.addPreviewProfileToProjects();
   } 
 
+  getProjectWithAuthorsPreview(){
+    const dataReturn = this.projects;
+    dataReturn.forEach((project) => {
+      const previewAuthors: { userId: string; name: string; surname: string, photo : string}[] = [];
+      project.authors.forEach((authorId: string) => {
+        const profiles = this.profilesService.getProfilesById(authorId);
+        const profile = Array.isArray(profiles) ? profiles[0] : profiles;
+        if (profile) {
+          previewAuthors.push({
+            userId: profile.userId,
+            name: profile.name,
+            surname: profile.surname,
+            photo: profile.photo,
+          });
+        }
+      });
+      project.authors = previewAuthors;
+    });
+    return dataReturn;
+  }
+
+  /*
   addPreviewProfileToProjects(){
     this.projects.forEach((project) => {
       const previewAuthors: { userId: string; name: string; surname: string, photo : string}[] = [];
@@ -34,6 +56,7 @@ export class ProjectsService {
       project.authors = previewAuthors;
     });
   }
+  */
 
   getProjectsAll(){
     return this.projects

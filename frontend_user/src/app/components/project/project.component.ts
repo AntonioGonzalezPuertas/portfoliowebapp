@@ -29,4 +29,7 @@ export class ProjectComponent  implements OnInit {
     const primaryUrl = `${baseUrl}${skillName.toLowerCase().replace('.','')}/${skillName.toLowerCase().replace('.','')}-original.svg`;
     return primaryUrl;
   }
+  getProfilePreview(){
+    
+  }
 }
