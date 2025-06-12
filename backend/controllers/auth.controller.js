@@ -2,6 +2,8 @@ const Profile = require("../models/profile.model");
 const Session = require("../models/session.model");
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
+const nodemailer = require("nodemailer");
+const crypto = require("crypto");
 
 const authController = {};
 
@@ -65,11 +67,9 @@ authController.changePassword = async function (req, res) {
     user.password = hashedPass;
     await user.save();
 
-    res
-      .status(200)
-      .json({
-        message: `the password of ${user.name} was successfully updated`,
-      });
+    res.status(200).json({
+      message: `the password of ${user.name} was successfully updated`,
+    });
   } catch (err) {
     res
       .status(400)
@@ -97,8 +97,6 @@ authController.logout = async function (req, res) {
 };
 
 // forgot password
-const nodemailer = require("nodemailer");
-
 authController.forgotPassword = async function (req, res) {
   const { email } = req.body;
 
@@ -108,12 +106,21 @@ authController.forgotPassword = async function (req, res) {
 
   try {
     const user = await Profile.findOne({ email });
+
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    const testAccount = await nodemailer.createTestAccount();
+    // 1. Générer un mot de passe temporaire sécurisé
+    const tempPassword = crypto.randomBytes(6).toString("hex"); // 12 caractères
+    const hashedPassword = await bcrypt.hash(tempPassword, 10);
 
+    // 2. Mettre à jour le mot de passe de l'utilisateur dans la base
+    user.password = hashedPassword;
+    await user.save();
+
+    // 3. Créer un transporteur de test (pas besoin de config réelle)
+    const testAccount = await nodemailer.createTestAccount();
     const transporter = nodemailer.createTransport({
       host: testAccount.smtp.host,
       port: testAccount.smtp.port,
@@ -124,24 +131,27 @@ authController.forgotPassword = async function (req, res) {
       },
     });
 
-    const resetLink = `https://example.com/reset-password?token=abc123`;
-
+    // 4. Envoyer le mail avec le mot de passe temporaire
     const info = await transporter.sendMail({
       from: '"Mon App" <no-reply@monapp.com>',
       to: email,
-      subject: "Réinitialisation de votre mot de passe",
-      text: `Bonjour ${user.name},\n\nClique ici pour réinitialiser ton mot de passe : ${resetLink}`,
+      subject: "Nouveau mot de passe",
+      text: `Bonjour ${user.name},\n\nVoici ton nouveau mot de passe : ${tempPassword}\n\nTu peux maintenant te connecter avec ce mot de passe.`,
     });
 
+    // 5. Fournir l’URL d’aperçu (utile pour tester avec ethereal)
     const previewUrl = nodemailer.getTestMessageUrl(info);
 
     res.status(200).json({
-      message: "E-mail envoyé",
-      previewUrl, // visible dans le navigateur pour test
+      message: "Nouveau mot de passe envoyé par e-mail",
+      previewUrl, // utile pour développement
     });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: "Erreur envoi mail", error: err.message });
+    res.status(500).json({
+      message: "Erreur lors de la réinitialisation",
+      error: err.message,
+    });
   }
 };
 
