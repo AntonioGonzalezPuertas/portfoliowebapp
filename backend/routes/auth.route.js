@@ -6,6 +6,8 @@ router.post("/login", authController.login);
 
 router.put("/changePassword/:id", authController.changePassword);
 
-router.post('/logout', authController.logout);
+router.post("/logout", authController.logout);
+
+router.post("/forgot-password", authController.forgotPassword);
 
 module.exports = router;
