@@ -19,9 +19,7 @@ import { addIcons } from 'ionicons';
 import { arrowBackOutline } from 'ionicons/icons';
 import { ProfilesService } from 'src/app/services/profiles.service';
 import { ForgotPasswordModalComponent } from '../forgot-password-modal/forgot-password-modal.component';
-import { environment } from 'src/environments/environment.prod';
-
-declare const google: any; // Declare the global `google` object
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-login',
@@ -58,7 +56,6 @@ export class LoginComponent implements OnInit {
 
   public ngOnInit() {
     this.clearForm(); // Clear the form when the component is initialized
-    this.initializeGoogleSignIn();
 
     this.activatedRoute.queryParams.subscribe((params) => {
       if (params['reload']) {
@@ -224,105 +221,6 @@ export class LoginComponent implements OnInit {
       } catch (error) {
         console.error('Error sending reset password email:', error);
         this.showError('Email not sent: ' + <string>error);
-      }
-    }
-  }
-
-  initializeGoogleSignIn(): void {
-    // Load the Google Sign-In API
-    const script = document.createElement('script');
-    script.src = 'https://accounts.google.com/gsi/client';
-    script.async = true;
-    script.defer = true;
-    document.body.appendChild(script);
-
-    script.onload = () => {
-      // Initialize Google Sign-In
-      google.accounts.id.initialize({
-        client_id: environment.googleClientId, // Replace with your Google Client ID
-        callback: this.handleGoogleSignIn.bind(this),
-      });
-
-      // Render the Google Sign-In button
-      google.accounts.id.renderButton(
-        document.getElementById('google-signin-button'),
-        { theme: 'outline', size: 'large' } // Customize the button
-      );
-    };
-  }
-
-  handleGoogleSignIn(response: any): void {
-    // Extract the credential (JWT token) from the response
-    const credential = response.credential;
-
-    if (credential) {
-      // Decode the JWT token to get user information (optional)
-      const data = this.decodeJwt(credential);
-      console.log('Decoded User Info:', data);
-
-      // Send the credential to your backend for verification or authentication
-      this.authenticateWithBackend(data);
-    } else {
-      console.error('Google Sign-In failed: No credential received.');
-    }
-  }
-
-  decodeJwt(token: string): any {
-    const base64Url = token.split('.')[1];
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    const jsonPayload = decodeURIComponent(
-      atob(base64)
-        .split('')
-        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-        .join('')
-    );
-    return JSON.parse(jsonPayload);
-  }
-
-  async authenticateWithBackend(data: any): Promise<void> {
-    try {
-      const result = await this.authService.authUser(data.email, data.sub);
-      if (result) {
-        this.profilesService.getProfilesById(result.user.id).then((profile) => {
-          this.authService.setProfileInfo(profile);
-          this.router.navigate(['/tabs/account/']);
-        });
-      } else {
-        console.error('Login failed: Invalid credentials');
-        this.showError('Login failed: Invalid credentials');
-      }
-    } catch (error: any) {
-      if (error.status === 404 || error.status === 400) {
-        console.log('Gmail user not registered yet, creating a new user...');
-        try {
-          const newProfile: any = {
-            email: data.email,
-            name: data.given_name,
-            password: data.sub,
-          };
-          const result = await this.profilesService.addProfile(newProfile);
-
-          if (result) {
-            // Redirect to the login page after successful registration
-            this.showMessage(
-              'An email has been sent to confirm your account, please check your inbox.'
-            );
-            this.authService.isSignUp = false; // Reset the sign-up flag
-          } else {
-            console.error('Signup failed: Unable to create profile');
-            this.showError('Signup failed: Unable to create profile');
-          }
-        } catch (error) {
-          console.error('Error creating user:', error);
-          this.showError(
-            'An error occurred while creating a new user. Please try again.'
-          );
-        }
-      } else {
-        console.error('Error during authentication:', error);
-        this.showError(
-          'An error occurred during authentication. Please try again.'
-        );
       }
     }
   }
