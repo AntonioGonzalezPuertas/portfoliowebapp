@@ -8,7 +8,6 @@ import { environment } from 'src/environments/environment';
 })
 export class ProfilesService {
   private profiles: any[] = [];
-  private headers = { headers: { 'Content-Type': 'application/json' } };
 
   // Urls
   private findAllProfilesUrl = environment.BASE_URL + '/profiles/findAll';
@@ -26,8 +25,14 @@ export class ProfilesService {
 
   public async getProfilesAll(): Promise<any> {
     if (environment.production) {
+      const headers = {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer `,
+        },
+      };
       const profiles = await firstValueFrom(
-        this.httpClient.post(this.findAllProfilesUrl, {}, this.headers)
+        this.httpClient.post(this.findAllProfilesUrl, {}, headers)
       );
       if (profiles) {
         this.profiles = <any>profiles;
@@ -63,8 +68,14 @@ export class ProfilesService {
   async addProfile(profile: any): Promise<any> {
     //console.log('addProfile', profile);
     if (environment.production) {
+      const headers = {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer `,
+        },
+      };
       const result: any = await firstValueFrom(
-        this.httpClient.post(this.newProfilesUrl, profile, this.headers)
+        this.httpClient.post(this.newProfilesUrl, profile, headers)
       );
       //console.log('Profile added :', result);
       if (result) {
@@ -86,11 +97,17 @@ export class ProfilesService {
     //console.log('updateProfile', profile);
 
     if (environment.production) {
+      const headers = {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      };
       const result = await firstValueFrom(
         this.httpClient.put(
-          this.updateProfilesUrl + profile.id + '/' + token,
+          this.updateProfilesUrl + profile.id,
           profile,
-          this.headers
+          headers
         )
       );
       if (result) {
@@ -131,10 +148,16 @@ export class ProfilesService {
 
   async deleteProfile(id: string, token: string | null): Promise<boolean> {
     if (environment.production) {
+      const headers = {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      };
       const result = await firstValueFrom(
         this.httpClient.delete(
           this.deleteProfilesUrl + id + '/' + token,
-          this.headers
+          headers
         )
       );
       if (result) {
@@ -158,12 +181,18 @@ export class ProfilesService {
 
   async authProfile(email: string, password: string) {
     if (environment.production) {
+      const headers = {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer `,
+        },
+      };
       const authData = { email: email, password: password };
       const valid = await firstValueFrom(
         this.httpClient.post(
           environment.BASE_URL + '/auth/login',
           authData,
-          this.headers
+          headers
         )
       );
       return valid;
@@ -183,14 +212,20 @@ export class ProfilesService {
     }
   }
 
-  async logout(token: string | null) {
+  async logout(sessionId: string, token: string | null) {
     if (environment.production) {
-      const authData = {};
+      const headers = {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      };
+      const authData = { sessionId: sessionId };
       const result = await firstValueFrom(
         this.httpClient.post(
-          environment.BASE_URL + '/auth/logout' + '/' + token,
+          environment.BASE_URL + '/auth/logout',
           authData,
-          this.headers
+          headers
         )
       );
     }
@@ -221,11 +256,17 @@ export class ProfilesService {
         currentPassword: data.password,
         newPassword: data.newPassword,
       };
+      const headers = {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      };
       return await firstValueFrom(
         this.httpClient.post(
           environment.BASE_URL + '/auth/changePassword' + '/' + token,
           changePasswordData,
-          this.headers
+          headers
         )
       )
         .then((response) => {
@@ -254,11 +295,17 @@ export class ProfilesService {
 
   async sendResetPasswordEmail(email: string): Promise<any> {
     const data = { email: email };
+    const headers = {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer `,
+      },
+    };
     return await firstValueFrom(
       this.httpClient.post(
         environment.BASE_URL + '/auth/sendResetPasswordEmail',
         data,
-        this.headers
+        headers
       )
     )
       .then((response) => {
@@ -301,11 +348,17 @@ export class ProfilesService {
       type: category,
       message: message,
     };
+    const headers = {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    };
     const result = await firstValueFrom(
       this.httpClient.post(
         environment.BASE_URL + '/requests' + '/' + token,
         data,
-        this.headers
+        headers
       )
     )
       .then((response) => {

@@ -100,7 +100,11 @@ export class LoginComponent implements OnInit {
         let profile = await this.profilesService.getProfilesById(
           result.user.id
         );
-        this.authService.setProfileInfo(profile, result.user.token);
+        this.authService.setProfileInfo(
+          profile,
+          result.user.token,
+          result.user.sessionId
+        );
         this.router.navigate(['/tabs/account/']);
       } else {
         console.error('Login failed: Invalid credentials');
@@ -174,7 +178,11 @@ export class LoginComponent implements OnInit {
     );
     if (result) {
       this.profilesService.getProfilesById(result.user.id).then((profile) => {
-        this.authService.setProfileInfo(profile, result.user.token);
+        this.authService.setProfileInfo(
+          profile,
+          result.user.token,
+          result.user.sessionId
+        );
         this.router.navigate(['/tabs/account/']);
       });
     }

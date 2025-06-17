@@ -16,7 +16,6 @@ export class ProjectsService {
   private projects: any[] = [];
   private categories: any[] = [];
 
-  private headers = { headers: { 'Content-Type': 'application/json' } };
   private findAllProjectUrl = environment.BASE_URL + '/projects/findAll';
   private createProjectUrl = environment.BASE_URL + '/projects/';
   private updateProjectUrl = environment.BASE_URL + '/projects/';
@@ -30,8 +29,14 @@ export class ProjectsService {
 
   async getProjectsAll(): Promise<any> {
     if (environment.production) {
+      const headers = {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer `,
+        },
+      };
       const projects = await firstValueFrom(
-        this.httpClient.post(this.findAllProjectUrl, {}, this.headers)
+        this.httpClient.post(this.findAllProjectUrl, {}, headers)
       );
       if (projects) {
         this.projects = <any>projects;
@@ -53,13 +58,15 @@ export class ProjectsService {
   async createProject(projectData: any): Promise<any> {
     console.log('createProject', projectData);
     if (environment.production) {
+      const headers = {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${this.authService.getToken()}`,
+        },
+      };
       try {
         const response = await firstValueFrom(
-          this.httpClient.post(
-            this.createProjectUrl + '/' + this.authService.getToken(),
-            projectData,
-            this.headers
-          )
+          this.httpClient.post(this.createProjectUrl, projectData, headers)
         );
         console.log('Success:', response);
         return response; // retourne le project
@@ -82,15 +89,18 @@ export class ProjectsService {
   async updateProject(projectData: any): Promise<any> {
     console.log('update', projectData);
     if (environment.production) {
+      const headers = {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${this.authService.getToken()}`,
+        },
+      };
       try {
         const response = await firstValueFrom(
           this.httpClient.put(
-            this.updateProjectUrl +
-              projectData._id +
-              '/' +
-              this.authService.getToken(),
+            this.updateProjectUrl + projectData._id,
             projectData,
-            this.headers
+            headers
           )
         );
         console.log('Update Success:', response);
@@ -146,15 +156,15 @@ export class ProjectsService {
 
   async removeProject(projectId: string): Promise<any> {
     if (environment.production) {
+      const headers = {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${this.authService.getToken()}`,
+        },
+      };
       try {
         const response = await firstValueFrom(
-          this.httpClient.delete(
-            this.updateProjectUrl +
-              projectId +
-              '/' +
-              this.authService.getToken(),
-            this.headers
-          )
+          this.httpClient.delete(this.updateProjectUrl + projectId, headers)
         );
         console.log('response :', response);
         return response;

@@ -16,6 +16,7 @@ export class AuthService {
   public enabledSignUp$ = this.isSignUpSubject.asObservable();
 
   private token: string | null = null; // Holds the authentication token
+  private sessionId: string = ''; // Holds the session ID
 
   constructor() {}
 
@@ -43,7 +44,10 @@ export class AuthService {
   }
 
   async logout(): Promise<any> {
-    const result: any = await this.profileService.logout(this.token);
+    const result: any = await this.profileService.logout(
+      this.sessionId,
+      this.token
+    );
     if (result) {
       this.isLoggedInSubject.next(false);
     }
@@ -54,9 +58,12 @@ export class AuthService {
     return this.token;
   }
 
-  setProfileInfo(userInfo: any, token?: string): void {
+  setProfileInfo(userInfo: any, token?: string, sessionId?: string): void {
     if (token !== undefined) {
       this.token = token;
+    }
+    if (sessionId !== undefined) {
+      this.sessionId = sessionId;
     }
     this.userInfoSubject.next(userInfo);
   }
