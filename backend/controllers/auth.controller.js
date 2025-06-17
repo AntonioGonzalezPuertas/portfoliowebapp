@@ -4,6 +4,8 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const JWT_SECRET = process.env.JWT_SECRET || "your_secret_key"; // Use env var in production
+const nodemailer = require("nodemailer");
+const crypto = require("crypto");
 
 const authController = {};
 
@@ -108,6 +110,65 @@ authController.logout = async function (req, res) {
     }
   } catch (err) {
     res.status(400).json({ message: "failure to log out", error: err.message });
+  }
+};
+
+// forgot password
+authController.forgotPassword = async function (req, res) {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ message: "Email is required" });
+  }
+
+  try {
+    const user = await Profile.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // 1. Générer un mot de passe temporaire sécurisé
+    const tempPassword = crypto.randomBytes(6).toString("hex"); // 12 caractères
+    const hashedPassword = await bcrypt.hash(tempPassword, 10);
+
+    // 2. Mettre à jour le mot de passe de l'utilisateur dans la base
+    user.password = hashedPassword;
+    await user.save();
+
+    // 3. Créer un transporteur de test (pas besoin de config réelle)
+    const testAccount = await nodemailer.createTestAccount();
+    const transporter = nodemailer.createTransport({
+      host: testAccount.smtp.host,
+      port: testAccount.smtp.port,
+      secure: testAccount.smtp.secure,
+      auth: {
+        user: testAccount.user,
+        pass: testAccount.pass,
+      },
+    });
+
+    // 4. Envoyer le mail avec le mot de passe temporaire
+    const info = await transporter.sendMail({
+      from: '"Mon App" <no-reply@monapp.com>',
+      to: email,
+      subject: "Nouveau mot de passe",
+      text: `Bonjour ${user.name},\n\nVoici ton nouveau mot de passe : ${tempPassword}\n\nTu peux maintenant te connecter avec ce mot de passe.`,
+    });
+
+    // 5. Fournir l’URL d’aperçu (utile pour tester avec ethereal)
+    const previewUrl = nodemailer.getTestMessageUrl(info);
+
+    res.status(200).json({
+      message: "Nouveau mot de passe envoyé par e-mail",
+      previewUrl, // utile pour développement
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      message: "Erreur lors de la réinitialisation",
+      error: err.message,
+    });
   }
 };
 
