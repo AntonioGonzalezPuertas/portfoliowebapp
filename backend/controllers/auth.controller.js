@@ -2,6 +2,8 @@ const Profile = require("../models/profile.model");
 const Session = require("../models/session.model");
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const JWT_SECRET = process.env.JWT_SECRET || "your_secret_key"; // Use env var in production
 
 const authController = {};
 
@@ -26,6 +28,14 @@ authController.login = async function (req, res) {
     if (!session) {
       return res.status(401).json({ message: "session does not exist" });
     }
+
+    // Create JWT
+    const token = jwt.sign(
+      { id: user.id, email: user.email, admin: user.admin }, // payload
+      JWT_SECRET,
+      { expiresIn: "2h" } // token expiry
+    );
+
     res.status(200).json({
       message: "successfully authentificated",
       user: {
@@ -36,7 +46,8 @@ authController.login = async function (req, res) {
         role: user.role,
         email: user.email,
         createdAt: user.createdAt,
-        token: session._id,
+        sessionId: session._id,
+        token: token,
       },
     });
   } catch (err) {
@@ -49,35 +60,28 @@ authController.changePassword = async function (req, res) {
   const id = req.params.id;
   const currentPass = req.body.currentPassword;
   const newPass = req.body.newPassword;
-  const token = req.params.token;
 
   try {
-    const session = await Session.findOne({ _id: token });
-    console.log("session found:", session);
-    if (session?.status === true) {
-      if (!mongoose.Types.ObjectId.isValid(id)) {
-        return res.status(404).json({ message: "Id not existant" });
-      }
-      // confirming the password typed is right before proceeding
-      const user = await Profile.findById(id);
-      if (!user) {
-        return res.status(400).json({ message: "user not found" });
-      }
-      const isValid = await bcrypt.compare(currentPass, user.password);
-      if (!isValid) {
-        return res.status(401).json({ message: "wrong password" });
-      }
-      // add bcrypt for password hash if updated
-      const hashedPass = await bcrypt.hash(newPass, 10);
-      user.password = hashedPass;
-      await user.save();
-
-      res.status(200).json({
-        message: `the password of ${user.name} was successfully updated`,
-      });
-    } else {
-      return res.status(404).json({ message: "No valid session" });
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(404).json({ message: "Id not existant" });
     }
+    // confirming the password typed is right before proceeding
+    const user = await Profile.findById(id);
+    if (!user) {
+      return res.status(400).json({ message: "user not found" });
+    }
+    const isValid = await bcrypt.compare(currentPass, user.password);
+    if (!isValid) {
+      return res.status(401).json({ message: "wrong password" });
+    }
+    // add bcrypt for password hash if updated
+    const hashedPass = await bcrypt.hash(newPass, 10);
+    user.password = hashedPass;
+    await user.save();
+
+    res.status(200).json({
+      message: `the password of ${user.name} was successfully updated`,
+    });
   } catch (err) {
     res
       .status(400)
@@ -87,11 +91,11 @@ authController.changePassword = async function (req, res) {
 
 // logout
 authController.logout = async function (req, res) {
-  const userEmail = req.body.email;
-  const token = req.params.token;
+  const id = req.body.sessionId;
+  console.log("id:", id);
 
   try {
-    const session = await Session.findOne({ _id: token });
+    const session = await Session.findOne({ _id: id });
     console.log("session found:", session);
     if (session?.status === true) {
       const outcome = await Session.findOneAndUpdate(

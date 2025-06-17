@@ -28,18 +28,10 @@ projectController.findAll = async function (req, res) {
 };
 
 projectController.create = async function (req, res) {
-  const token = req.params.token;
-
   try {
-    const session = await Session.findOne({ _id: token });
-    console.log("session found:", session);
-    if (session?.status === true) {
-      const newProject = new Project(req.body);
-      await newProject.save();
-      res.status(201).json(newProject);
-    } else {
-      return res.status(404).json({ message: "No valid session" });
-    }
+    const newProject = new Project(req.body);
+    await newProject.save();
+    res.status(201).json(newProject);
   } catch (err) {
     res
       .status(400)
@@ -50,25 +42,18 @@ projectController.create = async function (req, res) {
 projectController.update = async function (req, res) {
   //
   const id = req.params.id;
-  const token = req.params.token;
 
   try {
-    const session = await Session.findOne({ _id: token });
-    console.log("session found:", session);
-    if (session?.status === true) {
-      if (!mongoose.Types.ObjectId.isValid(id)) {
-        return res.status(404).json({ message: "ID not existant for update" });
-      }
-      const updatedProject = await Project.findByIdAndUpdate(id, req.body, {
-        new: true,
-      });
-      if (!updatedProject) {
-        return res.status(404).json({ message: "no project found to update" });
-      }
-      res.status(200).json(updatedProject);
-    } else {
-      return res.status(404).json({ message: "No valid session" });
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(404).json({ message: "ID not existant for update" });
     }
+    const updatedProject = await Project.findByIdAndUpdate(id, req.body, {
+      new: true,
+    });
+    if (!updatedProject) {
+      return res.status(404).json({ message: "no project found to update" });
+    }
+    res.status(200).json(updatedProject);
   } catch (err) {
     res
       .status(400)
@@ -78,29 +63,18 @@ projectController.update = async function (req, res) {
 
 projectController.delete = async function (req, res) {
   const id = req.params.id;
-  const token = req.params.token;
 
   try {
-    const session = await Session.findOne({ _id: token });
-    console.log("session found:", session);
-    if (session?.status === true) {
-      if (!mongoose.Types.ObjectId.isValid(id)) {
-        return res
-          .status(404)
-          .json({ message: "ID not existant for deletion" });
-      }
-      const deletedProject = await Project.findByIdAndUpdate(id, {
-        isDeleted: true,
-      });
-      if (!deletedProject) {
-        return res
-          .status(404)
-          .json({ message: "No project found for deletion" });
-      }
-      res.status(200).json({ message: "Project deleted successfully" });
-    } else {
-      return res.status(404).json({ message: "No valid session" });
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(404).json({ message: "ID not existant for deletion" });
     }
+    const deletedProject = await Project.findByIdAndUpdate(id, {
+      isDeleted: true,
+    });
+    if (!deletedProject) {
+      return res.status(404).json({ message: "No project found for deletion" });
+    }
+    res.status(200).json({ message: "Project deleted successfully" });
   } catch (err) {
     res
       .status(400)

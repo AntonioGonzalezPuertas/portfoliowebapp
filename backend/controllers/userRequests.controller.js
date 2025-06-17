@@ -17,21 +17,13 @@ userRequestController.findAll = async function (req, res) {
 };
 
 userRequestController.create = async function (req, res) {
-  const token = req.params.token;
-
   try {
-    const session = await Session.findOne({ _id: token });
-    console.log("session found:", session);
-    if (session?.status === true) {
-      if (!mongoose.Types.ObjectId.isValid(req.body.userId)) {
-        return res.status(404).json({ message: "invalid or missing userId" });
-      }
-      const newRequest = new UserRequest(req.body);
-      await newRequest.save();
-      res.status(201).json(newRequest);
-    } else {
-      return res.status(404).json({ message: "No valid session" });
+    if (!mongoose.Types.ObjectId.isValid(req.body.userId)) {
+      return res.status(404).json({ message: "invalid or missing userId" });
     }
+    const newRequest = new UserRequest(req.body);
+    await newRequest.save();
+    res.status(201).json(newRequest);
   } catch (err) {
     res
       .status(400)
@@ -55,12 +47,10 @@ userRequestController.update = async function (req, res) {
         .status(404)
         .json({ message: "unable to update: request not found" });
     }
-    res
-      .status(200)
-      .json({
-        message: `the request with id: ${id} was successfully updated: `,
-        updatedRequest,
-      });
+    res.status(200).json({
+      message: `the request with id: ${id} was successfully updated: `,
+      updatedRequest,
+    });
   } catch (err) {
     res
       .status(400)

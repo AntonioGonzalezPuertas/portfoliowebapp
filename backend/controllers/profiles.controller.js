@@ -45,29 +45,20 @@ profileController.create = async function (req, res) {
 
 profileController.update = async function (req, res) {
   const id = req.params.id;
-  const token = req.params.token;
 
   try {
-    const session = await Session.findOne({ _id: token });
-    console.log("session found:", session);
-    if (session?.status === true) {
-      if (!mongoose.Types.ObjectId.isValid(id)) {
-        return res.status(404).json({ message: "Id not existant" });
-      }
-      const updatedProfile = await Profile.findByIdAndUpdate(id, req.body, {
-        new: true,
-      });
-      if (!updatedProfile) {
-        return res
-          .status(404)
-          .json({ message: "profile to update: not found" });
-      }
-      res.status(200).json({
-        message: `the profile of ${updatedProfile.name} was successfully updated`,
-      });
-    } else {
-      return res.status(404).json({ message: "No valid session" });
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(404).json({ message: "Id not existant" });
     }
+    const updatedProfile = await Profile.findByIdAndUpdate(id, req.body, {
+      new: true,
+    });
+    if (!updatedProfile) {
+      return res.status(404).json({ message: "profile to update: not found" });
+    }
+    res.status(200).json({
+      message: `the profile of ${updatedProfile.name} was successfully updated`,
+    });
   } catch (err) {
     res
       .status(400)
@@ -77,25 +68,18 @@ profileController.update = async function (req, res) {
 
 profileController.delete = async function (req, res) {
   const id = req.params.id;
-  const token = req.params.token;
 
   try {
-    const session = await Session.findOne({ _id: token });
-    console.log("session found:", session);
-    if (session?.status === true) {
-      if (!mongoose.Types.ObjectId.isValid(id)) {
-        return res.status(404).json({ message: "Id not existant" });
-      }
-      const deletedProfile = await Profile.findByIdAndUpdate(id, {
-        isDeleted: true,
-      });
-      if (!deletedProfile) {
-        return res.status(400).json({ message: "failed to delete profile" });
-      }
-      res.status(200).json({ message: "Profile deleted successfully" });
-    } else {
-      return res.status(404).json({ message: "No valid session" });
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(404).json({ message: "Id not existant" });
     }
+    const deletedProfile = await Profile.findByIdAndUpdate(id, {
+      isDeleted: true,
+    });
+    if (!deletedProfile) {
+      return res.status(400).json({ message: "failed to delete profile" });
+    }
+    res.status(200).json({ message: "Profile deleted successfully" });
   } catch (err) {
     res
       .status(400)
