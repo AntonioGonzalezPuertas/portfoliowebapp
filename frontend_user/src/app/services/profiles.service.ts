@@ -253,7 +253,7 @@ export class ProfilesService {
     if (environment.production) {
       const changePasswordData = {
         id: id,
-        currentPassword: data.password,
+        currentPassword: data.currentPassword,
         newPassword: data.newPassword,
       };
       const headers = {
@@ -263,8 +263,8 @@ export class ProfilesService {
         },
       };
       return await firstValueFrom(
-        this.httpClient.post(
-          environment.BASE_URL + '/auth/changePassword' + '/' + token,
+        this.httpClient.put(
+          environment.BASE_URL + '/auth/changePassword/' + id,
           changePasswordData,
           headers
         )

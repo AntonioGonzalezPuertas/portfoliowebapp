@@ -132,7 +132,7 @@ export class EditProfilePage implements OnInit {
     const { data } = await modal.onDidDismiss();
     if (data && typeof data === 'object') {
       const result = await this.profilesService.changePassword(
-        this.profile.id,
+        this.profile._id,
         this.auth.getToken(),
         data
       );
