@@ -1,5 +1,8 @@
 const Project = require("../models/project.model");
 const mongoose = require("mongoose");
+const fs = require("fs");
+const path = require("path");
+const uploadImage = require("../utils/uploadImage");
 
 const projectController = {};
 
@@ -99,6 +102,119 @@ projectController.deleteHard = async function (req, res) {
     res
       .status(400)
       .json({ message: "Project deletion failed", error: err.message });
+  }
+};
+
+projectController.uploadImage = async function (req, res) {
+  const projectId = req.params.id;
+  const base64Image = req.body.image;
+
+  if (!base64Image || typeof base64Image !== "string") {
+    return res
+      .status(400)
+      .json({ success: false, message: "Image base64 manquante." });
+  }
+
+  try {
+    // Vérifie que le projet existe
+    const project = await Project.findById(projectId);
+    if (!project) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Projet introuvable." });
+    }
+    const imageUrl = await uploadImage(
+      base64Image,
+      projectId,
+      req.headers.host
+    );
+
+    project.photos.push(imageUrl);
+    await project.save();
+
+    return res.status(200).json({ success: true, imageUrl });
+  } catch (err) {
+    console.error("Erreur upload image :", err);
+    return res.status(500).json({ success: false, message: "Erreur serveur." });
+  }
+};
+
+projectController.updateImages = async function (req, res) {
+  const projectId = req.params.id;
+  const incomingPhotos = req.body.photos;
+  const updatedPhotos = [];
+
+  if (!Array.isArray(incomingPhotos) || incomingPhotos.length === 0) {
+    return res
+      .status(400)
+      .json({ success: false, message: "Aucune image fournie." });
+  }
+
+  try {
+    // Vérifie que le projet existe
+    const project = await Project.findById(projectId);
+    if (!project) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Projet introuvable." });
+    }
+
+    // Met à jour les photos du projet
+    //il faut comparer si les urls des images sont déjà présentes
+    const existingImages = project.photos || [];
+    for (const photo of incomingPhotos) {
+      // Vérifie si cela commence par data:image/ pour savoir si c'est une image base64
+      const isBase64 =
+        typeof photo === "string" && photo.startsWith("data:image/");
+
+      if (isBase64) {
+        // ➕ C'est une nouvelle image à uploader^
+        const uploadedUrl = await uploadImage(
+          photo,
+          projectId,
+          req.headers.host
+        );
+        updatedPhotos.push(uploadedUrl);
+      } else {
+        // ➕ C'est une URL, on la garde si elle existait avant
+        if (existingImages.includes(photo)) {
+          updatedPhotos.push(photo);
+        }
+      }
+    }
+    // Supprimer les images qui ne sont plus utilisées
+    const removedImages = existingImages.filter(
+      (img) => !updatedPhotos.includes(img)
+    );
+    console.log(removedImages);
+
+    for (const imgUrl of removedImages) {
+      const imagePath = path.join(
+        __dirname,
+        "../public",
+        imgUrl.replace(/^.*\/projectsImages\//, "projectsImages/")
+      );
+      fs.unlink(imagePath, (err) => {
+        if (err) {
+          console.error(
+            `Erreur lors de la suppression de l'image : ${imgUrl}`,
+            err
+          );
+        } else {
+          console.log(`Image supprimée : ${imgUrl}`);
+        }
+      });
+    }
+
+    project.photos = updatedPhotos;
+    await project.save();
+
+    return res
+      .status(200)
+      .json({ success: true, message: "Images mises à jour." });
+  } catch (err) {
+    console.error("Erreur mise à jour des images :", err);
+    return res.status(500).json({ success: false, message: "Erreur serveur." });
   }
 };
 
