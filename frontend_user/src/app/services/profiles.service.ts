@@ -82,13 +82,13 @@ export class ProfilesService {
     return profile;
   }
 
-  async updateProfile(profile: any): Promise<any> {
+  async updateProfile(profile: any, token: string | null): Promise<any> {
     //console.log('updateProfile', profile);
 
     if (environment.production) {
       const result = await firstValueFrom(
         this.httpClient.put(
-          this.updateProfilesUrl + profile.id,
+          this.updateProfilesUrl + profile.id + '/' + token,
           profile,
           this.headers
         )
@@ -129,10 +129,13 @@ export class ProfilesService {
     }
   }
 
-  async deleteProfile(id: string): Promise<boolean> {
+  async deleteProfile(id: string, token: string | null): Promise<boolean> {
     if (environment.production) {
       const result = await firstValueFrom(
-        this.httpClient.delete(this.deleteProfilesUrl + id, this.headers)
+        this.httpClient.delete(
+          this.deleteProfilesUrl + id + '/' + token,
+          this.headers
+        )
       );
       if (result) {
         console.log('Profile deleted:', result);
@@ -180,6 +183,19 @@ export class ProfilesService {
     }
   }
 
+  async logout(token: string | null) {
+    if (environment.production) {
+      const authData = {};
+      const result = await firstValueFrom(
+        this.httpClient.post(
+          environment.BASE_URL + '/auth/logout' + '/' + token,
+          authData,
+          this.headers
+        )
+      );
+    }
+  }
+
   getTechnologiesFromUsers() {
     const allTechnologies: any[] = [];
     this.profiles.forEach((profile) => {
@@ -194,7 +210,11 @@ export class ProfilesService {
     return allTechnologies;
   }
 
-  async changePassword(id: string, data: any): Promise<boolean> {
+  async changePassword(
+    id: string,
+    token: string | null,
+    data: any
+  ): Promise<boolean> {
     if (environment.production) {
       const changePasswordData = {
         id: id,
@@ -203,7 +223,7 @@ export class ProfilesService {
       };
       return await firstValueFrom(
         this.httpClient.post(
-          environment.BASE_URL + '/auth/changePassword',
+          environment.BASE_URL + '/auth/changePassword' + '/' + token,
           changePasswordData,
           this.headers
         )
@@ -272,6 +292,7 @@ export class ProfilesService {
 
   async sendAdminMessage(
     id: string,
+    token: string | null,
     category: string,
     message: string
   ): Promise<any[]> {
@@ -282,7 +303,7 @@ export class ProfilesService {
     };
     const result = await firstValueFrom(
       this.httpClient.post(
-        environment.BASE_URL + '/requests',
+        environment.BASE_URL + '/requests' + '/' + token,
         data,
         this.headers
       )

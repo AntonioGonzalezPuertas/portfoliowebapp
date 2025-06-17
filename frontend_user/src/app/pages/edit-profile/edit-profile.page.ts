@@ -133,6 +133,7 @@ export class EditProfilePage implements OnInit {
     if (data && typeof data === 'object') {
       const result = await this.profilesService.changePassword(
         this.profile.id,
+        this.auth.getToken(),
         data
       );
       if (result) {
@@ -186,7 +187,8 @@ export class EditProfilePage implements OnInit {
       delete formValue.techName; // Remove techName
       delete formValue.techVersion; // Remove techVersion (if needed)
 
-      this.profile = await this.profilesService.updateProfile(formValue);
+      const token = this.auth.getToken();
+      this.profile = await this.profilesService.updateProfile(formValue, token);
       this.auth.setProfileInfo(this.profile); // Update the profile in AuthService
       this.router.navigate(['/tabs/account'], {
         queryParams: { reload: true },
@@ -290,7 +292,10 @@ export class EditProfilePage implements OnInit {
           text: 'Delete',
           role: 'destructive',
           handler: () => {
-            this.profilesService.deleteProfile(this.profile.id);
+            this.profilesService.deleteProfile(
+              this.profile.id,
+              this.auth.getToken()
+            );
             this.logout();
           },
         },

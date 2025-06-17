@@ -123,6 +123,7 @@ export class AppComponent {
   }
 
   logout() {
+    this.auth.logout();
     this.auth.isLoggedIn = false;
     this.router.navigate(['/tabs/account/login'], {
       queryParams: { reload: true },

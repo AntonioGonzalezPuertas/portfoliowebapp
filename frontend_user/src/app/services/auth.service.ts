@@ -15,6 +15,8 @@ export class AuthService {
   private isSignUpSubject = new BehaviorSubject<boolean>(false);
   public enabledSignUp$ = this.isSignUpSubject.asObservable();
 
+  private token: string | null = null; // Holds the authentication token
+
   constructor() {}
 
   get isLoggedIn(): boolean {
@@ -40,9 +42,25 @@ export class AuthService {
     return result; // Return the profile object if authentication is successful
   }
 
-  setProfileInfo(userInfo: any): void {
+  async logout(): Promise<any> {
+    const result: any = await this.profileService.logout(this.token);
+    if (result) {
+      this.isLoggedInSubject.next(false);
+    }
+    return result; // Return the profile object if authentication is successful
+  }
+
+  getToken(): string | null {
+    return this.token;
+  }
+
+  setProfileInfo(userInfo: any, token?: string): void {
+    if (token !== undefined) {
+      this.token = token;
+    }
     this.userInfoSubject.next(userInfo);
   }
+
   getProfileInfo(): any {
     return this.userInfoSubject.value;
   }

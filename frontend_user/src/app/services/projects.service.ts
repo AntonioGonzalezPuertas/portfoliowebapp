@@ -5,12 +5,13 @@ import { ProfilesService } from './profiles.service';
 import { firstValueFrom } from 'rxjs';
 import { environment } from 'src/environments/environment';
 import { HttpClient } from '@angular/common/http';
+import { AuthService } from './auth.service'; // Import the AuthService if needed
 
 @Injectable({
   providedIn: 'root',
 })
 export class ProjectsService {
-  private profilesService = inject(ProfilesService);
+  private authService = inject(AuthService);
   private httpClient = inject(HttpClient);
   private projects: any[] = [];
   private categories: any[] = [];
@@ -54,7 +55,11 @@ export class ProjectsService {
     if (environment.production) {
       try {
         const response = await firstValueFrom(
-          this.httpClient.post(this.createProjectUrl, projectData, this.headers)
+          this.httpClient.post(
+            this.createProjectUrl + '/' + this.authService.getToken(),
+            projectData,
+            this.headers
+          )
         );
         console.log('Success:', response);
         return response; // retourne le project
@@ -80,7 +85,10 @@ export class ProjectsService {
       try {
         const response = await firstValueFrom(
           this.httpClient.put(
-            this.updateProjectUrl + projectData._id,
+            this.updateProjectUrl +
+              projectData._id +
+              '/' +
+              this.authService.getToken(),
             projectData,
             this.headers
           )
@@ -141,7 +149,10 @@ export class ProjectsService {
       try {
         const response = await firstValueFrom(
           this.httpClient.delete(
-            this.updateProjectUrl + projectId,
+            this.updateProjectUrl +
+              projectId +
+              '/' +
+              this.authService.getToken(),
             this.headers
           )
         );
