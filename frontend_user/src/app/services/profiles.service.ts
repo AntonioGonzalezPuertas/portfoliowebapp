@@ -301,9 +301,10 @@ export class ProfilesService {
         Authorization: `Bearer `,
       },
     };
+    console.log('Sending reset password email to:', email);
     return await firstValueFrom(
       this.httpClient.post(
-        environment.BASE_URL + '/auth/sendResetPasswordEmail',
+        environment.BASE_URL + '/auth/forgot-password',
         data,
         headers
       )
