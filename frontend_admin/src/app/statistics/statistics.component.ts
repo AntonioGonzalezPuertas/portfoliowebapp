@@ -9,6 +9,8 @@ import { UserService } from '../services/user.service';
 import { Project } from '../models/projects.model';
 import { ChangeDetectorRef } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
+import { Session } from '../models/session.model';
+import { SessionService } from '../services/session.service';
 
 
 @Component({
@@ -24,6 +26,7 @@ export class StatisticsComponent implements OnInit {
   selectedKey: string = 'users';
 
   projects: Project[] = [];
+  sessions: Session[] = [];
 
   // ✅ Technology stats for the chart
   techLabels: string[] = [];
@@ -49,7 +52,9 @@ export class StatisticsComponent implements OnInit {
   period: 'day' | 'week' | 'month' = 'day'; // default
 
 
-  constructor(private projectService: ProjectService, private userService: UserService, private cdr: ChangeDetectorRef) { }
+  constructor(private projectService: ProjectService, private userService: UserService, private cdr: ChangeDetectorRef, 
+    private sessionService: SessionService
+  ) { }
 
   ngOnInit(): void {
     this.projectService.getProjects().subscribe({
@@ -66,6 +71,14 @@ export class StatisticsComponent implements OnInit {
         this.computeUserTechnologyUsage();
       }
     });
+    /*
+    this.sessionService.getSessions().subscribe({
+      next: (data) => {
+        this.sessions = data;
+        this.co
+      }
+    }) 
+    */
   }
 
 
@@ -103,6 +116,7 @@ export class StatisticsComponent implements OnInit {
   }
 
 
+  
 
 
   // ✅ Count tech usage

@@ -11,9 +11,12 @@ export class SessionService {
 
   private baseUrl = environment.BASE_URL + '/sessions';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) {
+    console.log('constructor SessionService');
+  }
 
   getSessions(): Observable<Session[]> {
+    console.log('sessionService / getSessions');
     return this.http.post<Session[]>(
       this.baseUrl,
       {},
