@@ -88,6 +88,12 @@ export class ProjectsService {
   }
 
   async uploadPhotoProject(idProject: string, photo: any): Promise<any> {
+    const headers = {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${this.authService.getToken()}`,
+      },
+    };
     const dataPhoto = {
       image: photo,
     };
@@ -97,7 +103,7 @@ export class ProjectsService {
         this.httpClient.put(
           this.createProjectUrl + 'upload/' + idProject,
           dataPhoto,
-          this.headers
+          headers
         )
       );
       console.log('Success:', response);
