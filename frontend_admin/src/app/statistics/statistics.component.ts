@@ -79,9 +79,14 @@ export class StatisticsComponent implements OnInit {
         this.sessions = data;
         console.log ("Nbre de sessions:", this.sessions.length);
         console.log ("Nbre de sessions:", this.sessions);
+
+        this.onlineSessions = this.sessions.filter((session) => session.status == true);
+        console.log ("Nbre de sessions actives filtrees:", this.onlineSessions.length);
+        console.log ("Sessions actives filtrees:", this.onlineSessions);
       }
     });
     
+    /*
     this.sessionService.getOnlineSessions().subscribe({
       next: (data) => {
         this.onlineSessions = data;
@@ -89,6 +94,7 @@ export class StatisticsComponent implements OnInit {
         console.log('sessions actives:', data);
       }
     })
+    */
     
   }
 
