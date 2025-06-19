@@ -35,6 +35,9 @@
         <app-doughnut-chart></app-doughnut-chart>
       </div>
     -->
+
+
+
       <div class="stat-item" (click)="toggleLineChart('projects')">
         <mat-icon color="primary">trending_up</mat-icon>
         <div class="stat-item-text">
@@ -48,6 +51,27 @@
         ></app-doughnut-chart>
 
       </div>
+
+          <!-- Nouveau stat -->
+
+    <div class="stat-item" (click)="toggleLineChart('active')">
+      <mat-icon color="primary">show_chart</mat-icon>
+      <div class="stat-item-text">
+        <h3>chiffre type</h3>
+        <p>nouvelle stat 1</p>
+      </div>
+      <app-doughnut-chart></app-doughnut-chart>
+    </div>
+
+    <div class="stat-item" (click)="toggleLineChart('active')">
+      <mat-icon color="primary">show_chart</mat-icon>
+      <div class="stat-item-text">
+        <h3>autre chiffre type</h3>
+        <p>nouvelle stat 2</p>
+      </div>
+      <app-doughnut-chart></app-doughnut-chart>
+    </div>
+
     </div>
 
     @if (showLineChart) {
