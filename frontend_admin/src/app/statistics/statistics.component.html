@@ -57,19 +57,30 @@
     <div class="stat-item" (click)="toggleLineChart('active')">
       <mat-icon color="primary">show_chart</mat-icon>
       <div class="stat-item-text">
-        <h3>chiffre type</h3>
-        <p>nouvelle stat 1</p>
+        <h3>@if ( sessions.length > 0) {
+        {{ sessions.length }}  
+        }
+        </h3>
+        <p>Nombre de sessions</p>
       </div>
-      <app-doughnut-chart></app-doughnut-chart>
+      <app-doughnut-chart
+        [chartData]="sessionsChartDataObject"
+      ></app-doughnut-chart>
     </div>
 
     <div class="stat-item" (click)="toggleLineChart('active')">
       <mat-icon color="primary">show_chart</mat-icon>
       <div class="stat-item-text">
-        <h3>autre chiffre type</h3>
-        <p>nouvelle stat 2</p>
+        <h3>@if (onlineSessions.length>0)
+          {
+            {{onlineSessions.length }}
+          }
+        </h3>
+        <p>Nombre d'utilisateurs en ligne</p>
       </div>
-      <app-doughnut-chart></app-doughnut-chart>
+      <app-doughnut-chart
+        [chartData]="onlineSessionsChartDataObject"
+      ></app-doughnut-chart>
     </div>
 
     </div>

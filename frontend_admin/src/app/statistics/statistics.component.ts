@@ -52,6 +52,16 @@ export class StatisticsComponent implements OnInit {
 
   period: 'day' | 'week' | 'month' = 'day'; // default
 
+  sessionsChartDataObject: any = {
+    labels: [],
+    datasets: [{ data: [] }]
+  };
+
+  onlineSessionsChartDataObject: any = {
+    labels: [],
+    datasets: [{ data: [] }]
+  };
+
 
   constructor(private projectService: ProjectService, private userService: UserService, private cdr: ChangeDetectorRef, 
     private sessionService: SessionService
@@ -80,9 +90,12 @@ export class StatisticsComponent implements OnInit {
         console.log ("Nbre de sessions:", this.sessions.length);
         console.log ("Nbre de sessions:", this.sessions);
 
+        this.computeSessions();
+
         this.onlineSessions = this.sessions.filter((session) => session.status == true);
         console.log ("Nbre de sessions actives filtrees:", this.onlineSessions.length);
         console.log ("Sessions actives filtrees:", this.onlineSessions);
+        this.computeOnlineSessions();
       }
     });
     
@@ -133,7 +146,52 @@ export class StatisticsComponent implements OnInit {
   }
 
 
-  
+    computeSessions(): void {
+    const usageMap = new Map<string, number>();
+
+    for (const session of this.sessions) {
+        const count = usageMap.get(session.email) ?? 0;
+        usageMap.set(session.email, count + 1);
+    }
+
+    const labelsSessions = Array.from(usageMap.keys());
+    const countsSessions = Array.from(usageMap.values());
+    console.log ("Sessions", this.sessions);
+    console.log ("Session labels", labelsSessions);
+    console.log ("Session counts", countsSessions);
+
+    this.sessionsChartDataObject = {
+      labelsSessions,
+      datasets: [{ data: countsSessions }]
+    };
+
+    this.cdr.detectChanges(); // Force update
+
+  }
+
+    computeOnlineSessions(): void {
+    const usageMap = new Map<string, number>();
+
+    for (const session of this.onlineSessions) {
+        const count = usageMap.get(session.email) ?? 0;
+        usageMap.set(session.email, count + 1);
+    }
+
+    const labelsOnlineSessions = Array.from(usageMap.keys());
+    const countsOnlineSessions  = Array.from(usageMap.values());
+
+    console.log ("Online Sessions", this.onlineSessions);
+    console.log ("Online Session labels", labelsOnlineSessions );
+    console.log ("Online Session counts", countsOnlineSessions );
+
+    this.onlineSessionsChartDataObject = {
+      labelsOnlineSessions ,
+      datasets: [{ data: countsOnlineSessions  }]
+    };
+
+    this.cdr.detectChanges(); // Force update
+
+  }
 
 
   // ✅ Count tech usage
