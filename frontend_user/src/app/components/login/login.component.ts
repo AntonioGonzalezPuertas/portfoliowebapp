@@ -226,7 +226,7 @@ export class LoginComponent implements OnInit {
         );
         console.log('Reset password email result:', result);
         if (result) {
-          this.showError('Email sent successfully' + result);
+          this.showMessage('Email sent successfully');
         } else {
           this.showError('Email not sent');
         }
