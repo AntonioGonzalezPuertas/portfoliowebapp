@@ -25,12 +25,24 @@ PortfolioProjets is a portfolio and project management web app where users can:
 ## Main Functionalities
 
 - **User Authentication:** Sign up, log in, and log out securely.
-  - by email/password
-  - using google OAth 2.0
+  - LogIn by email/password
+  - Sessions are stored to keep statistiques.
+  - JWT is used received on LogIn to authenticate the requests
+    - Profiles: Edit, Delete, Logout, ChangePassword, PostRequestAdmin
+    - Projects: Create, Edit, Delete
+  - Using google OAth 2.0 (functionality removed):
+    - Removed to simplify the code and because it requires sharing my google development accocunt, but the fonctionality ready to cherrypick in the branch "add Login with Google OAuth2.0"
+    - To be used, create file "environment.prod.ts" with a google client id for the project
+  - Change password
   - Forgot password link request
-  - Sign up with email validation
+    - Send email with a link to reset password
+    - A second email is sent with a random password to access to the account and be able to change the password
+      <img src=".\src\assets\Doc\resetPasswordEmail.PNG" alt="App Screenshot"/>
+- **Profile Creation:** Create a profile with a unique username and password.
+  - Sign up with email validation (JWT token)
+    <img src=".\src\assets\Doc\validationEmail.PNG" alt="App Screenshot"/>
 - **Profile Management:** Create, edit, and view user profiles with skills, biography, and contact details.
-- **Project Management:** Add new projects, edit existing ones, assign technologies, and manage project authors.
+- **Project Management:** Add new projects, edit existing ones, assign technologies, pictures and manage project authors.
 - **Search & Filter:** Search for profiles and projects, filter by technology or category.
 - **Admin Contact:** Send messages to administrators for support or feedback.
 - **Responsive Design:** Optimized for desktop and mobile devices.
@@ -90,7 +102,7 @@ src/
 
 - Unit and functional tests
 
-- Token API request validation
+- Cookies management
 
 - Captha SingUp
 
