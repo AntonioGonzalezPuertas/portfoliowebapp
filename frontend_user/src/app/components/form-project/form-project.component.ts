@@ -387,7 +387,7 @@ export class FormProjectComponent implements OnInit {
       technologies: any[];
       authors: string[];
       link: any;
-      photos: any[];
+      photos?: any[];
     } = {
       title: this.projectForm.get('title')?.value,
       category: this.projectForm.get('category')?.value,
@@ -396,15 +396,23 @@ export class FormProjectComponent implements OnInit {
       technologies: this.technologies,
       authors: this.authorsId,
       link: this.projectForm.get('link')?.value,
-      photos: this.photos,
+      photos: [],
     };
     //Enregistre le project
     if (this.isNew) {
       console.log('Creating new project with data:', newProjectData);
       const response = await this.projectService.createProject(newProjectData);
       console.log('Project creation response:', response);
-      //tester la response quand cela fonction afficher toast en fonction
-      //Faire requete création
+      //récupérer l'id du projet créé
+      //boucle sur this.photos et ajouter une a une les photos
+
+      for (const photo of this.photos) {
+        const response2 = await this.projectService.uploadPhotoProject(
+          response._id,
+          photo
+        );
+        console.log('Photo upload response:', response2);
+      }
       this.messageToast = 'Project created successfully.';
       this.colorToast = 'success';
       this.setOpen(true);
@@ -418,7 +426,25 @@ export class FormProjectComponent implements OnInit {
       */
     } else {
       newProjectData._id = this.project._id;
+      // tester this.photos si base 64 enregistrer dans une array et supprimer de this.photos
+      //faire le update du projet normalement
+      //faire upload des photos base64
+
+      const arrayPhotosBase64: string[] = this.photos.filter((photo) =>
+        photo.startsWith('data:image/jpeg;base64,')
+      );
+      const arrayPhotosUrl: string[] = this.photos.filter((photo) =>
+        photo.startsWith('http')
+      );
+      newProjectData.photos = arrayPhotosUrl;
       const response = await this.projectService.updateProject(newProjectData);
+      console.log('Project update response:', response);
+      for (const photo of arrayPhotosBase64) {
+        await this.projectService.uploadPhotoProject(
+          newProjectData._id!,
+          photo
+        );
+      }
       this.messageToast = 'Project updated successfully.';
       this.colorToast = 'success';
       this.setOpen(true);
