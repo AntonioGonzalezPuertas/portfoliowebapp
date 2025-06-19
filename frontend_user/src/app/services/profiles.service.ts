@@ -79,6 +79,7 @@ export class ProfilesService {
       );
       //console.log('Profile added :', result);
       if (result) {
+        console.log('Email sent:', result);
         profile['_id'] = result._id;
         //console.log('Profile added :', profile);
         this.profiles.push(profile);
@@ -180,34 +181,49 @@ export class ProfilesService {
   }
 
   async authProfile(email: string, password: string) {
-    if (environment.production) {
-      const headers = {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer `,
-        },
-      };
-      const authData = { email: email, password: password };
-      const valid = await firstValueFrom(
-        this.httpClient.post(
-          environment.BASE_URL + '/auth/login',
-          authData,
-          headers
-        )
-      );
-      return valid;
-    } else {
-      /////// Using Mock Data //////////
-      if (this.profiles.length === 0) {
-        await this.getProfilesAll();
-      }
-      const profile = this.profiles.find(
-        (profile) => profile.email === email && profile.password === password
-      );
-      if (profile) {
-        return profile;
+    try {
+      if (environment.production) {
+        const headers = {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer `,
+          },
+        };
+        const authData = { email: email, password: password };
+        const valid = await firstValueFrom(
+          this.httpClient.post(
+            environment.BASE_URL + '/auth/login',
+            authData,
+            headers
+          )
+        );
+        return valid;
       } else {
-        return null;
+        /////// Using Mock Data //////////
+        if (this.profiles.length === 0) {
+          await this.getProfilesAll();
+        }
+        const profile = this.profiles.find(
+          (profile) => profile.email === email && profile.password === password
+        );
+        if (profile) {
+          return profile;
+        } else {
+          return null;
+        }
+      }
+    } catch (error) {
+      if (
+        error &&
+        typeof error === 'object' &&
+        (error as any).error &&
+        'message' in (error as any).error
+      ) {
+        console.error('Error:', (error as any).error.message);
+        throw (error as any).error.message;
+      } else {
+        console.error('Error:', error);
+        throw error;
       }
     }
   }

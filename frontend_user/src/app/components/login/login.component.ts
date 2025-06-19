@@ -112,9 +112,7 @@ export class LoginComponent implements OnInit {
       }
     } catch (error) {
       console.error('Error during login:', error);
-      this.showError(
-        'An error occurred while logging in. Please try again later.'
-      );
+      this.showError(<string>error);
     }
   }
 
@@ -143,6 +141,7 @@ export class LoginComponent implements OnInit {
           this.showMessage(
             'An email has been sent to confirm your account, please check your inbox.'
           );
+          //console.log('Signup successful:', result);
           this.authService.isSignUp = false; // Reset the sign-up flag
         } else {
           console.error('Signup failed: Unable to create profile');
@@ -166,25 +165,30 @@ export class LoginComponent implements OnInit {
   }
 
   public async byPass(): Promise<void> {
-    const userInfo = {
-      id: 6,
-      email: 'tester@gmail.com',
-      password: '1234',
-      name: 'Tester',
-    };
-    const result = await this.authService.authUser(
-      userInfo.email,
-      userInfo.password
-    );
-    if (result) {
-      this.profilesService.getProfilesById(result.user.id).then((profile) => {
-        this.authService.setProfileInfo(
-          profile,
-          result.user.token,
-          result.user.sessionId
-        );
-        this.router.navigate(['/tabs/account/']);
-      });
+    try {
+      const userInfo = {
+        id: 6,
+        email: 'tester@gmail.com',
+        password: '1234',
+        name: 'Tester',
+      };
+      const result = await this.authService.authUser(
+        userInfo.email,
+        userInfo.password
+      );
+      if (result) {
+        this.profilesService.getProfilesById(result.user.id).then((profile) => {
+          this.authService.setProfileInfo(
+            profile,
+            result.user.token,
+            result.user.sessionId
+          );
+          this.router.navigate(['/tabs/account/']);
+        });
+      }
+    } catch (error) {
+      console.error('Error during signup:', error);
+      this.showError(<string>error);
     }
   }
 

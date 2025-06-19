@@ -35,12 +35,21 @@ export class AuthService {
   }
 
   async authUser(email: string, password: string): Promise<any> {
-    const result: any = await this.profileService.authProfile(email, password);
-    if (result) {
-      this.isLoggedInSubject.next(true);
-    }
+    try {
+      const result: any = await this.profileService.authProfile(
+        email,
+        password
+      );
+      //console.log('Auth result:', result);
+      if (result) {
+        this.isLoggedInSubject.next(true);
+      }
 
-    return result; // Return the profile object if authentication is successful
+      return result; // Return the profile object if authentication is successful
+    } catch (error) {
+      console.error('Authentication error:', error);
+      throw error;
+    }
   }
 
   async logout(): Promise<any> {
