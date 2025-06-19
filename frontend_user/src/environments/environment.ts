@@ -4,8 +4,8 @@
 
 export const environment = {
   production: true,
-  //BASE_URL: 'http://13.219.82.203:3333/api',
   BASE_URL: 'http://localhost:3000/api',
+  //BASE_URL: 'http://13.219.82.203:3333/api',
   hideContactDetails: true,
 };
 

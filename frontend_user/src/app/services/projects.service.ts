@@ -55,6 +55,7 @@ export class ProjectsService {
     return this.projects;
   }
 
+  // AJOUTER LES PHOTOS UNE PAR UNE AVEC UNE BOUCLE UNE FOIS LE PROJET CREE
   async createProject(projectData: any): Promise<any> {
     console.log('createProject', projectData);
     if (environment.production) {
@@ -65,6 +66,7 @@ export class ProjectsService {
         },
       };
       try {
+        //ajouter le projet sans les photos
         const response = await firstValueFrom(
           this.httpClient.post(this.createProjectUrl, projectData, headers)
         );
@@ -85,7 +87,30 @@ export class ProjectsService {
     }
   }
 
+  async uploadPhotoProject(idProject: string, photo: any): Promise<any> {
+    const dataPhoto = {
+      image: photo,
+    };
+    try {
+      //ajoute
+      const response = await firstValueFrom(
+        this.httpClient.put(
+          this.createProjectUrl + 'upload/' + idProject,
+          dataPhoto,
+          this.headers
+        )
+      );
+      console.log('Success:', response);
+      return response; // retourne le project
+    } catch (error) {
+      console.error('Error:', error);
+      throw error; //voir ce qu'on retourne pour la gestion des erreurs
+    }
+  }
+
   //tester si on a l'id dans projectData
+  // POUR LES IMAGES, TESTER SI CA FONCTIONNE EN ENVOYANT TOUT SINON TESTER SI BASE 64 ET SI QUE DES LIENS FAIRE LE UPDATE
+  // ET DANS LE BACKEND PLUS BESOIN DE TESTER SI BASE 64 OU PAS
   async updateProject(projectData: any): Promise<any> {
     console.log('update', projectData);
     if (environment.production) {
@@ -96,12 +121,14 @@ export class ProjectsService {
         },
       };
       try {
+        //faire l'update du projet sans les photos
         const response = await firstValueFrom(
           this.httpClient.put(
             this.updateProjectUrl + projectData._id,
             projectData,
             headers
           )
+          //faire l'update des photos
         );
         console.log('Update Success:', response);
         return response; // ✅ retourne la réponse de l’API
@@ -124,6 +151,8 @@ export class ProjectsService {
       return dummyProjectsData[index] || null;
     }
   }
+
+  async updatePhotoProject(projectData: any): Promise<any> {}
 
   async getProjectById(id: string): Promise<any> {
     const project = await this.projects.filter((project) => project._id === id);
