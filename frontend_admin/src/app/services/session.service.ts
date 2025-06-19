@@ -25,4 +25,14 @@ export class SessionService {
       }
     );  
   }
+
+  getOnlineSessions(): Observable<Session[]> {
+    return this.http.post<Session[]>(
+      this.baseUrl + '/online',
+      {},
+      {
+        headers: new HttpHeaders({ 'Content-Type': 'application/json'}),
+      }
+    );
+  }
 }

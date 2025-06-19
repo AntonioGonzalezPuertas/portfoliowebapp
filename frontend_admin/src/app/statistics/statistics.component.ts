@@ -57,6 +57,7 @@ export class StatisticsComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
+
     this.projectService.getProjects().subscribe({
       next: (data) => {
         this.projects = data;
@@ -71,14 +72,15 @@ export class StatisticsComponent implements OnInit {
         this.computeUserTechnologyUsage();
       }
     });
-    /*
+    
     this.sessionService.getSessions().subscribe({
       next: (data) => {
         this.sessions = data;
-        this.co
+        console.log ("Nbre de sessions:", this.sessions.length);
+        console.log ("Nbre de sessions:", this.sessions);
       }
     }) 
-    */
+    
   }
 
 
