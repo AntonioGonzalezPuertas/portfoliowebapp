@@ -46,7 +46,7 @@ profileController.create = async function (req, res) {
     const previewUrl = nodemailer.getTestMessageUrl(info);
 
     res.status(200).json({
-      message: "Nouveau mot de passe envoyé par e-mail",
+      message: "New account craeted waiting for validation",
       previewUrl, // utile pour développement
     });
   } catch (err) {
@@ -81,7 +81,11 @@ async function sendEmailValidation(newProfile) {
     from: '"Portfolio Projects" <no-reply@portfolio-projects.com>',
     to: newProfile.email,
     subject: "Portfolio - Validation de compte",
-    text: `Bonjour ${newProfile.name},\n\nVoici le lien pour valider ton compte\n\n <a href="http://localhost:3000/api/auth/validate/${token}"></a> \n\n Merci de cliquer sur ce lien pour activer ton compte.`,
+    text: `Bonjour ${newProfile.name},\n\nVoici le lien pour valider ton compte:\nhttp://localhost:3000/api/auth/validate/${token}\n\nMerci de cliquer sur ce lien pour activer ton compte.`,
+    html: `Bonjour ${newProfile.name},<br><br>
+    Voici le lien pour valider ton compte :<br>
+    <a href="http://localhost:3000/api/auth/validate/${token}">Valider mon compte</a><br><br>
+    Merci de cliquer sur ce lien pour activer ton compte.`,
   });
   return info;
 }
