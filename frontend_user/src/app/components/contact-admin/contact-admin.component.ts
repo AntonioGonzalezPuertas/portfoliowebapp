@@ -34,11 +34,11 @@ export class ContactAdminComponent {
   }>();
 
   categories = [
-    'Support',
-    'Bug Report',
-    'Feature Request',
-    'Change Password',
-    'Other',
+    'Demande de support',
+    'Demande de verification',
+    'Plainte',
+    'Suggestion',
+    'Autre demande',
   ];
 
   contactForm: FormGroup;

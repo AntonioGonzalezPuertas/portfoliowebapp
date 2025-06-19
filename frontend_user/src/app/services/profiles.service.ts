@@ -372,11 +372,7 @@ export class ProfilesService {
       },
     };
     const result = await firstValueFrom(
-      this.httpClient.post(
-        environment.BASE_URL + '/requests' + '/' + token,
-        data,
-        headers
-      )
+      this.httpClient.post(environment.BASE_URL + '/requests', data, headers)
     )
       .then((response) => {
         console.log('Message sent to admin:', response);
