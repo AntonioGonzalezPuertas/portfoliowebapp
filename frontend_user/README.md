@@ -37,7 +37,7 @@ PortfolioProjets is a portfolio and project management web app where users can:
   - Forgot password link request
     - Send email with a link to reset password
     - A second email is sent with a random password to access to the account and be able to change the password
-      <img src=".\src\assets\Doc\resetPasswordEmail.PNG" alt="App Screenshot"/>
+      <img src=".\src\assets\Doc\ResetPasswordEmail.PNG" alt="App Screenshot"/>
 - **Profile Creation:** Create a profile with a unique username and password.
   - Sign up with email validation (JWT token)
     <img src=".\src\assets\Doc\validationEmail.PNG" alt="App Screenshot"/>
