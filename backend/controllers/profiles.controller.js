@@ -2,6 +2,11 @@ const Profile = require("../models/profile.model");
 const Session = require("../models/session.model");
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
+const nodemailer = require("nodemailer");
+const jwt = require("jsonwebtoken");
+const JWT_SECRET = process.env.JWT_SECRET || "your_secret_key"; // Use env var in production
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "2h"; // Use env var in production
+const JWT_EXPIRATION_VALIDATION = process.env.JWT_EXPIRES_IN || "24h"; // Use env var in production
 
 const profileController = {};
 
@@ -35,13 +40,51 @@ profileController.create = async function (req, res) {
     req.body.password = pass;
     const newProfile = new Profile(req.body);
     await newProfile.save();
-    res.status(201).json(newProfile);
+    info = await sendEmailValidation(newProfile);
+
+    // Fournir l’URL d’aperçu (utile pour tester avec ethereal)
+    const previewUrl = nodemailer.getTestMessageUrl(info);
+
+    res.status(200).json({
+      message: "Nouveau mot de passe envoyé par e-mail",
+      previewUrl, // utile pour développement
+    });
   } catch (err) {
     res
       .status(400)
       .json({ message: "Unable to create profile", error: err.message });
   }
 };
+
+async function sendEmailValidation(newProfile) {
+  // 1. Créer un transporteur de test (pas besoin de config réelle)
+  const testAccount = await nodemailer.createTestAccount();
+  const transporter = nodemailer.createTransport({
+    host: testAccount.smtp.host,
+    port: testAccount.smtp.port,
+    secure: testAccount.smtp.secure,
+    auth: {
+      user: testAccount.user,
+      pass: testAccount.pass,
+    },
+  });
+
+  // 2. Create JWT
+  const token = jwt.sign(
+    { id: newProfile._id, email: newProfile.email }, // payload
+    JWT_SECRET,
+    { expiresIn: JWT_EXPIRATION_VALIDATION } // token expiry
+  );
+
+  // 3. Envoyer le mail avec le lien pour valider le compte
+  const info = await transporter.sendMail({
+    from: '"Portfolio Projects" <no-reply@portfolio-projects.com>',
+    to: newProfile.email,
+    subject: "Portfolio - Validation de compte",
+    text: `Bonjour ${newProfile.name},\n\nVoici le lien pour valider ton compte\n\n <a href="http://localhost:3000/api/auth/validate/${token}"></a> \n\n Merci de cliquer sur ce lien pour activer ton compte.`,
+  });
+  return info;
+}
 
 profileController.update = async function (req, res) {
   const id = req.params.id;

@@ -4,6 +4,7 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const JWT_SECRET = process.env.JWT_SECRET || "your_secret_key"; // Use env var in production
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "2h"; // Use env var in production
 const nodemailer = require("nodemailer");
 const crypto = require("crypto");
 
@@ -21,6 +22,9 @@ authController.login = async function (req, res) {
     if (!user) {
       return res.status(400).json({ message: "user not found" });
     }
+    if ("isValidated" in user && user.isValidated === false) {
+      return res.status(400).json({ message: "User is not validated yet" });
+    }
     const isValid = await bcrypt.compare(userPass, user.password);
     if (!isValid) {
       return res.status(401).json({ message: "wrong password" });
@@ -35,7 +39,7 @@ authController.login = async function (req, res) {
     const token = jwt.sign(
       { id: user.id, email: user.email, admin: user.admin }, // payload
       JWT_SECRET,
-      { expiresIn: "2h" } // token expiry
+      { expiresIn: JWT_EXPIRES_IN } // token expiry
     );
 
     res.status(200).json({
@@ -170,6 +174,31 @@ authController.forgotPassword = async function (req, res) {
       error: err.message,
     });
   }
+};
+
+function getUserFromToken(token) {
+  if (!token) return null;
+  const user = jwt.verify(token, JWT_SECRET);
+  return user;
+}
+
+authController.validateAccount = async function (req, res) {
+  const token = req.params.token;
+  console.log("token:", token);
+
+  const user = getUserFromToken(token);
+  console.log("User:", user);
+
+  if (!user) {
+    return res.status(400).json({ message: "Invalid token" });
+  }
+  const result = await Profile.findByIdAndUpdate(
+    user.id,
+    { isValidated: true },
+    { new: true }
+  );
+  //console.log("Result:", result);
+  return res.status(400).json("Your account has been validated successfully");
 };
 
 // reset password

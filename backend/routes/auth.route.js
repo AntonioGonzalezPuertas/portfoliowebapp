@@ -15,4 +15,6 @@ router.post("/logout", authenticateToken, authController.logout);
 
 router.post("/forgot-password", authController.forgotPassword);
 
+router.get("/validate/:token", authController.validateAccount);
+
 module.exports = router;
