@@ -27,6 +27,7 @@ export class StatisticsComponent implements OnInit {
 
   projects: Project[] = [];
   sessions: Session[] = [];
+  onlineSessions: Session[] = [];
 
   // ✅ Technology stats for the chart
   techLabels: string[] = [];
@@ -79,7 +80,15 @@ export class StatisticsComponent implements OnInit {
         console.log ("Nbre de sessions:", this.sessions.length);
         console.log ("Nbre de sessions:", this.sessions);
       }
-    }) 
+    });
+    
+    this.sessionService.getOnlineSessions().subscribe({
+      next: (data) => {
+        this.onlineSessions = data;
+        console.log('nombre de sessions actives:', data.length);
+        console.log('sessions actives:', data);
+      }
+    })
     
   }
 
